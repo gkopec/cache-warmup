@@ -1,5 +1,5 @@
 {
-	"name": "eliashaeussler/cache-warmup",
+	"name": "genius-dev/cache-warmup",
 	"description": "Composer package to warm up website caches, based on a given XML sitemap",
 	"license": "GPL-3.0-or-later",
 	"type": "library",
@@ -23,7 +23,7 @@
 		"guzzlehttp/psr7": "^2.0",
 		"mtownsend/xml-to-array": "^2.0",
 		"psr/http-message": "^1.0 || ^2.0",
-		"psr/log": "^2.0 || ^3.0",
+		"psr/log": "^1.0 || ^2.0 || ^3.0",
 		"symfony/console": "^5.4 || ^6.0",
 		"symfony/filesystem": "^5.4 || ^6.0"
 	},
