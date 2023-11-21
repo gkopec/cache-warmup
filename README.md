@@ -95,6 +95,7 @@ The following input parameters are available:
 | [`--log-level`](#--log-level)                   | Log level used to determine which crawling results to log              |
 | [`--progress`, `-p`](#--progress)               | Show a progress bar during cache warmup                                |
 | [`--repeat-after`](#--repeat-after)             | Run cache warmup in endless loop and repeat *x* seconds after each run |
+| [`--stop-on-failure`](#--stop-on-failure)       | Cancel further cache warmup requests on failure                        |
 | [`--strategy`, `-s`](#--strategy)               | Optional crawling strategy to prepare URLs before crawling them        |
 | [`--urls`, `-u`](#--urls)                       | Additional URLs to be warmed up                                        |
 
@@ -166,10 +167,12 @@ $ cache-warmup --limit 250
 
 Show a progress bar during cache warmup.
 
-> 💡 You can show a more verbose progress bar by increasing output verbosity
+> [!NOTE]
+> You can show a more verbose progress bar by increasing output verbosity
 > with the `--verbose` command option.
 
-> ⚠️The progress bar is implicitly enabled when using a non-verbose
+> [!IMPORTANT]
+> The progress bar is implicitly enabled when using a non-verbose
 > [formatter](#--format), e.g. `json`.
 
 ```bash
@@ -193,8 +196,16 @@ The crawler must implement one the following interfaces:
   interface).
 * [`EliasHaeussler\CacheWarmup\Crawler\VerboseCrawlerInterface`][4] receives the
   current console output to generate user-oriented output.
+
+In addition, there exist more interfaces with advanced crawling features:
+
 * [`EliasHaeussler\CacheWarmup\Crawler\ConfigurableCrawlerInterface`][5] allows to
   make crawlers configurable (see [`--crawler-options`](#--crawler-options)).
+* [`EliasHaeussler\CacheWarmup\Crawler\LoggingCrawlerInterface`][24] can be used
+  to implement logging of crawling results (see [`--log-file`](#--log-file) and
+  [`--log-level`](#--log-level)).
+* [`EliasHaeussler\CacheWarmup\Crawler\StoppableCrawlerInterface`][23] prematurely
+  cancels cache warmup if a crawling fails (see [`--stop-on-failure`](#--stop-on-failure)).
 
 ```bash
 $ cache-warmup --crawler "Vendor\Crawler\MyCustomCrawler"
@@ -214,7 +225,8 @@ is used, otherwise the [`ConcurrentCrawler`][7].*
 
 A JSON-encoded string of additional config for configurable crawlers.
 
-> ⚠️ These options only apply to crawlers implementing
+> [!IMPORTANT]
+> These options only apply to crawlers implementing
 > [`EliasHaeussler\CacheWarmup\Crawler\ConfigurableCrawlerInterface`][5]. If the
 > configured crawler does not implement this interface, a warning is shown in case
 > crawler options are configured.
@@ -252,13 +264,12 @@ $ cache-warmup --strategy sort-by-priority
 #### `--format`
 
 The formatter used to print the cache warmup result.
+Read more in the [Formatters](#formatters) section below.
 
 At the moment, the following formatters are available:
 
 * [`json`][11]
 * [`text`][12] *(default)*
-
-> 💡 Read more in the [Formatters](#formatters) section below.
 
 ```bash
 $ cache-warmup --format json
@@ -326,6 +337,20 @@ $ cache-warmup --allow-failures
 | Multiple values allowed | **–**  |
 | Default                 | **no** |
 
+#### `--stop-on-failure`
+
+Cancel further cache warmup requests on failure.
+
+```bash
+$ cache-warmup --stop-on-failure
+```
+
+| Shorthand               | –      |
+|:------------------------|:-------|
+| Required                | **–**  |
+| Multiple values allowed | **–**  |
+| Default                 | **no** |
+
 #### `--repeat-after`
 
 Run cache warmup in endless loop and repeat *x* seconds after each run.
@@ -334,7 +359,8 @@ Run cache warmup in endless loop and repeat *x* seconds after each run.
 $ cache-warmup --repeat-after 300
 ```
 
-> ⚠️ If cache warmup fails, the command fails immediately and is not repeated.
+> [!IMPORTANT]
+> If cache warmup fails, the command fails immediately and is not repeated.
 > To continue in case of failures, the [`--allow-failures`](#--allow-failures)
 > command option must be passed as well.
 
@@ -375,7 +401,8 @@ using the library with PHP.
 
 Define how many URLs are crawled concurrently.
 
-> 💡 Internally, Guzzle's [Pool][13] feature is used to send multiple requests
+> [!NOTE]
+> Internally, Guzzle's [Pool][13] feature is used to send multiple requests
 > concurrently using asynchronous requests. You may also have a look at how
 > this is implemented in the library's [`RequestPoolFactory`][14].
 
@@ -445,7 +472,8 @@ $crawler = new \EliasHaeussler\CacheWarmup\Crawler\ConcurrentCrawler([
 
 Optional [configuration][19] used when instantiating a new Guzzle client.
 
-> ⚠️ Client configuration is ignored when running cache warmup from the
+> [!IMPORTANT]
+> Client configuration is ignored when running cache warmup from the
 > command-line. In addition, it is only respected if a new client is
 > instantiated *within* the crawler. If an existing client is passed to
 > the crawler, client configuration is ignored.
@@ -498,12 +526,12 @@ object. It includes the following properties:
 
 | Property            | Description                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------|
-| `cacheWarmupResult` | Lists all crawled URLs, grouped by their crawling state (`failure`, `success`)                                         |
+| `cacheWarmupResult` | Lists all crawled URLs, grouped by their crawling state (`failure`, `success`), and may contain `cancelled` state      |
 | `messages`          | Contains all logged messages, grouped by message severity (`error`, `info`, `success`, `warning`)                      |
 | `parserResult`      | Lists all parsed and excluded XML sitemaps and URLs, grouped by their parsing state (`excluded`, `failure`, `success`) |
 | `time`              | Lists all tracked times during cache warmup (`crawl`, `parse`)                                                         |
 
-> 💡 The complete JSON structure can be found in the provided [JSON schema][22].
+💡 The complete JSON structure can be found in the provided [JSON schema][22].
 
 ## 🧑‍💻 Contributing
 
@@ -535,3 +563,5 @@ This project is licensed under [GNU General Public License 3.0 (or later)](LICEN
 [20]: https://github.com/eliashaeussler/cache-warmup/releases/latest
 [21]: https://github.com/eliashaeussler/cache-warmup/pkgs/container/cache-warmup
 [22]: res/cache-warmup-result.schema.json
+[23]: src/Crawler/StoppableCrawlerInterface.php
+[24]: src/Crawler/LoggingCrawlerInterface.php
